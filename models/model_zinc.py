@@ -121,7 +121,7 @@ class MoleculeVAE():
             x_decoded_mean = K.flatten(x_decoded_mean)
             xent_loss = max_length * binary_crossentropy(x, x_decoded_mean)
             kl_loss = - 0.5 * K.mean(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis = -1)
-            return kl_loss
+            return xent_loss + kl_loss
 
         return (vae_loss, Lambda(sampling, output_shape=(latent_rep_size,), name='lambda')([z_mean, z_log_var]))
 
