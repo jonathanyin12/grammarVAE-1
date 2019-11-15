@@ -27,7 +27,7 @@ class MoleculeVAE():
                max_length_fpt=MAX_LEN_FINGERPRINT,
                latent_rep_size = 2,
                weights_file = None):
-               charset_length = len(charset)
+        charset_length = len(charset)
         
         x = Input(shape=(max_length, charset_length))
         _, z = self._buildEncoder(x, latent_rep_size, max_length, max_length_fpt)
