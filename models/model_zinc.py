@@ -127,8 +127,8 @@ class MoleculeVAE():
 
     def _buildDecoder(self, z, latent_rep_size, max_length, charset_length):
         h = Dense(latent_rep_size, name='latent_input', activation = 'relu')(z)
-        h = Dense(512, name='dense', activation = 'relu')(h)
-        h = Dense(1024, name='dense', activation = 'sigmoid')(h)
+        h = Dense(512, name='dense_2', activation = 'relu')(h)
+        h = Dense(1024, name='dense_3', activation = 'sigmoid')(h)
         h = Reshape((1024, 1), name='decoded_mean')(h)
   
         return h # don't do softmax, we do this in the loss now
