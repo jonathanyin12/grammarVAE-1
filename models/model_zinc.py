@@ -114,8 +114,8 @@ class MoleculeVAE():
             return P2
 
         def vae_loss(x, x_decoded_mean):
-            print('vae_loss', K.int_shape(true))
-            print('vae_loss_2', K.int_shape(pred_decoded_mean))
+            print('vae_loss', K.int_shape(x))
+            print('vae_loss_2', K.int_shape(x_decoded_mean))
 #             x_decoded_mean = conditional(x, x_decoded_mean, max_length_fpt, 1) # we add this new function to the loss
 #             x = K.flatten(x)
 #             x_decoded_mean = K.flatten(x_decoded_mean)
