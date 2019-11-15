@@ -53,7 +53,7 @@ class MoleculeVAE():
                 z1,
                 latent_rep_size,
                 max_length,
-                max_length_fpt
+                max_length_fpt,
                 charset_length
             )
         )
