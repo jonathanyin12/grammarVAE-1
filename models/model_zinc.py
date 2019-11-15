@@ -123,7 +123,7 @@ class MoleculeVAE():
             kl_loss = - 0.5 * K.mean(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis = -1)
             return xent_loss + kl_loss
 
-        return (vae_loss, Lambda(sampling, output_shape=(latent_rep_size,), name='lambda')([z_mean, z_log_var]))
+        return (vae_loss, Lambda(sampling, output_shape=(1024,), name='lambda')([z_mean, z_log_var]))
 
     def _buildDecoder(self, z, latent_rep_size, max_length, charset_length):
         h = Dense(latent_rep_size, name='latent_input', activation = 'relu')(z)
