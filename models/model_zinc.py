@@ -30,7 +30,7 @@ class MoleculeVAE():
         charset_length = len(charset)
         
         x = Input(shape=(max_length, charset_length))
-        _, z = self._buildEncoder(x, latent_rep_size, max_length)
+        _, z = self._buildEncoder(x, latent_rep_size, max_length, max_length_fpt)
         self.encoder = Model(x, z)
 
         encoded_input = Input(shape=(latent_rep_size,))
@@ -46,7 +46,7 @@ class MoleculeVAE():
         )
 
         x1 = Input(shape=(max_length, charset_length))
-        vae_loss, z1 = self._buildEncoder(x1, latent_rep_size, max_length)
+        vae_loss, z1 = self._buildEncoder(x1, latent_rep_size, max_length, max_length_fpt)
         self.autoencoder = Model(
             x1,
             self._buildDecoder(
@@ -60,7 +60,7 @@ class MoleculeVAE():
 
         # for obtaining mean and log variance of encoding distribution
         x2 = Input(shape=(max_length, charset_length))
-        (z_m, z_l_v) = self._encoderMeanVar(x2, latent_rep_size, max_length)
+        (z_m, z_l_v) = self._encoderMeanVar(x2, latent_rep_size, max_length, max_length_fpt)
         self.encoderMV = Model(inputs=x2, outputs=[z_m, z_l_v])
 
         if weights_file:
@@ -74,7 +74,7 @@ class MoleculeVAE():
                                  metrics = ['accuracy'])
 
 
-    def _encoderMeanVar(self, x, latent_rep_size, max_length, epsilon_std = 0.01):
+    def _encoderMeanVar(self, x, latent_rep_size, max_length, max_length_fpt, epsilon_std = 0.01):
         h = Convolution1D(9, 9, activation = 'relu', name='conv_1')(x)
         h = Convolution1D(9, 9, activation = 'relu', name='conv_2')(h)
         h = Convolution1D(10, 11, activation = 'relu', name='conv_3')(h)
