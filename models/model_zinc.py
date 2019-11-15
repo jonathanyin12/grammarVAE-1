@@ -13,6 +13,7 @@ import zinc_grammar as G
 masks_K = K.variable(G.masks)
 ind_of_ind_K = K.variable(G.ind_of_ind)
 
+MAX_LEN_FINGERPRINT = 1024
 MAX_LEN = 150
 DIM = G.D
 
@@ -23,6 +24,7 @@ class MoleculeVAE():
     def create(self,
                charset,
                max_length = MAX_LEN,
+               max_length_fpt=MAX_LEN_FINGERPRINT,
                latent_rep_size = 2,
                weights_file = None):
         charset_length = len(charset)
@@ -38,6 +40,7 @@ class MoleculeVAE():
                 encoded_input,
                 latent_rep_size,
                 max_length,
+                max_length_fpt,
                 charset_length
             )
         )
@@ -50,6 +53,7 @@ class MoleculeVAE():
                 z1,
                 latent_rep_size,
                 max_length,
+                max_length_fpt
                 charset_length
             )
         )
@@ -83,7 +87,7 @@ class MoleculeVAE():
         return (z_mean, z_log_var) 
 
 
-    def _buildEncoder(self, x, latent_rep_size, max_length, epsilon_std = 0.01):
+    def _buildEncoder(self, x, latent_rep_size, max_length, max_length_fpt, epsilon_std = 0.01):
         h = Convolution1D(9, 9, activation = 'relu', name='conv_1')(x)
         h = Convolution1D(9, 9, activation = 'relu', name='conv_2')(h)
         h = Convolution1D(10, 11, activation = 'relu', name='conv_3')(h)
@@ -102,13 +106,13 @@ class MoleculeVAE():
         # this function is the main change.
         # essentially we mask the training data so that we are only allowed to apply
         #   future rules based on the current non-terminal
-        def conditional(x_true, x_pred):
+        def conditional(x_true, x_pred, max_l, charset_l):
             most_likely = K.argmax(x_true)
             most_likely = tf.reshape(most_likely,[-1]) # flatten most_likely
             ix2 = tf.expand_dims(tf.gather(ind_of_ind_K, most_likely),1) # index ind_of_ind with res
             ix2 = tf.cast(ix2, tf.int32) # cast indices as ints 
             M2 = tf.gather_nd(masks_K, ix2) # get slices of masks_K with indices
-            M3 = tf.reshape(M2, [-1,max_length,DIM]) # reshape them
+            M3 = tf.reshape(M2, [-1,max_l,charset_l]) # reshape them
             P2 = tf.multiply(K.exp(x_pred),M3) # apply them to the exp-predictions
             P2 = tf.divide(P2,K.sum(P2,axis=-1,keepdims=True)) # normalize predictions
             return P2
@@ -116,25 +120,25 @@ class MoleculeVAE():
         def vae_loss(x, x_decoded_mean):
             print('vae_loss', K.int_shape(x))
             print('vae_loss_2', K.int_shape(x_decoded_mean))
-            x_decoded_mean = conditional(x, x_decoded_mean) # we add this new function to the loss
+            x_decoded_mean = conditional(x, x_decoded_mean, max_length_fpt, 1) # we add this new function to the loss
             x = K.flatten(x)
             x_decoded_mean = K.flatten(x_decoded_mean)
-            xent_loss = max_length * binary_crossentropy(x, x_decoded_mean)
+            xent_loss = max_length_fpt * binary_crossentropy(x, x_decoded_mean)
             kl_loss = - 0.5 * K.mean(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis = -1)
             return xent_loss + kl_loss
 
         return (vae_loss, Lambda(sampling, output_shape=(latent_rep_size,), name='lambda')([z_mean, z_log_var]))
 
-    def _buildDecoder(self, z, latent_rep_size, max_length, charset_length):
+    def _buildDecoder(self, z, latent_rep_size, max_length_fpt):
         h = Dense(latent_rep_size, name='latent_input', activation = 'relu')(z)
         h = Dense(512, name='dense_2', activation = 'relu')(h)
-        h = Dense(1024, name='dense_3', activation = 'sigmoid')(h)
-        h = Reshape((1024, 1), name='decoded_mean')(h)
+        h = Dense(max_length_fpt, name='dense_3', activation = 'sigmoid')(h)
+        h = Reshape((max_length_fpt, 1), name='decoded_mean')(h)
   
         return h # don't do softmax, we do this in the loss now
 
     def save(self, filename):
         self.autoencoder.save_weights(filename)
     
-    def load(self, charset, weights_file, latent_rep_size = 2, max_length=MAX_LEN):
-        self.create(charset, max_length = max_length, weights_file = weights_file, latent_rep_size = latent_rep_size)
+    def load(self, charset, weights_file, latent_rep_size = 2, max_length=MAX_LEN. max_length_fpt=MAX_LEN_FINGERPRINT):
+        self.create(charset, max_length = max_length, max_length=max_length, weights_file = weights_file, latent_rep_size = latent_rep_size)
