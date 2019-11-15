@@ -114,9 +114,9 @@ class MoleculeVAE():
             return P2
 
         def vae_loss(x, x_decoded_mean):
-            x_decoded_mean = conditional(x, x_decoded_mean, max_length_fpt, 1) # we add this new function to the loss
-            x = K.flatten(x)
-            x_decoded_mean = K.flatten(x_decoded_mean)
+#             x_decoded_mean = conditional(x, x_decoded_mean, max_length_fpt, 1) # we add this new function to the loss
+#             x = K.flatten(x)
+#             x_decoded_mean = K.flatten(x_decoded_mean)
             xent_loss = max_length_fpt * binary_crossentropy(x, x_decoded_mean)
             kl_loss = - 0.5 * K.mean(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis = -1)
             return xent_loss + kl_loss
