@@ -140,5 +140,5 @@ class MoleculeVAE():
     def save(self, filename):
         self.autoencoder.save_weights(filename)
     
-    def load(self, charset, weights_file, latent_rep_size = 2, max_length=MAX_LEN. max_length_fpt=MAX_LEN_FINGERPRINT):
+    def load(self, charset, weights_file, latent_rep_size = 2, max_length=MAX_LEN, max_length_fpt=MAX_LEN_FINGERPRINT):
         self.create(charset, max_length = max_length, max_length=max_length, weights_file = weights_file, latent_rep_size = latent_rep_size)
